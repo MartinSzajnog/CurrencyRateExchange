@@ -1,11 +1,7 @@
 package com.example.currencyexchangerate.controller;
 
-
 import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.service.ExchangeService;
-import com.example.currencyexchangerate.service.NBPClientService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import static com.example.currencyexchangerate.model.CurrencyCode.valueOf;
 
 @RestController
@@ -22,16 +19,14 @@ import static com.example.currencyexchangerate.model.CurrencyCode.valueOf;
 @AllArgsConstructor
 
 
-
 public class CurrencyController {
     private final ExchangeService exchangeService;
 
     /**
-     *
      * @param src
      * @param dst
      * @param money
-     * @return   @author Martin Szajnog
+     * @return @author Martin Szajnog
      * @throws IOException
      */
 

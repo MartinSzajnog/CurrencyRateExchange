@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,10 +93,9 @@ public class ExchangeService {
             currency.put(src, exchangeRate);
             BigDecimal exchangedAmount = money.multiply(exchangeRate.getBuy().setScale(2,
                     BigDecimal.ROUND_HALF_UP));
-            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY);
+            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY)
+                    .setScale(2, RoundingMode.HALF_UP);
             return exchangedAmountAfterCommission;
-
-
         }
     }
 
@@ -106,16 +106,15 @@ public class ExchangeService {
         if (CurrencyCode.PLN != src) {
             ExchangeRate exchangeRate = nbpClientService.getExchangeRateByCurrencyCode(src);
             currency.put(src, exchangeRate);
-            BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2);
-            // BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2, RoundingMode.HALF_UP);
-            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY);
+            BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(),2,RoundingMode.HALF_UP);
+            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY)
+                    .setScale(2, RoundingMode.HALF_UP);
 
             return exchangedAmountAfterCommission;
         } else {
             return money;
 
         }
-
     }
 
 

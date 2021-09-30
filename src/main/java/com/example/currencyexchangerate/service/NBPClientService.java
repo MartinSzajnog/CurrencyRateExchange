@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 
 
 @Component
-
 public class NBPClientService {
 
 
@@ -23,9 +22,7 @@ public class NBPClientService {
 
             URL url = new URL(NBP_URL + currencyCode.name() + "?format=json");
 
-            InputStream is = url.openStream();
-
-            try {
+            try (InputStream is = url.openStream()) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 String jsonText = readAll(br);
 
@@ -42,9 +39,8 @@ public class NBPClientService {
                 System.out.println("Kurs sprzedaży: " + askRate);
 
                 return exchangeRate;
-            } finally {
-                is.close();    //Po wykonaniu zczytania zamykamy kran z strumieniem. Zamykamy strumień wejściowy.
             }
+            //Po wykonaniu zczytania zamykamy kran z strumieniem. Zamykamy strumień wejściowy.
 
         }
 
@@ -57,13 +53,7 @@ public class NBPClientService {
             }
             return sb.toString();
         }
-
-
-
-
-
-
-    }
+}
 
 
 
