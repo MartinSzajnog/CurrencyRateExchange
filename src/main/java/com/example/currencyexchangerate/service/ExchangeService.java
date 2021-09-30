@@ -26,7 +26,6 @@ public class ExchangeService {
     private final NBPClientService nbpClientService;
 
     /**
-     *
      * @param srcAsCurrencyCode
      * @param dstAsCurrencyCode
      * @param money
@@ -108,7 +107,7 @@ public class ExchangeService {
             ExchangeRate exchangeRate = nbpClientService.getExchangeRateByCurrencyCode(src);
             currency.put(src, exchangeRate);
             BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2);
-            // BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2, RoundingMode.HALF_UP); // wyliczenie kwoty obcej waluta
+            // BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2, RoundingMode.HALF_UP);
             BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY);
 
             return exchangedAmountAfterCommission;
@@ -118,31 +117,6 @@ public class ExchangeService {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
