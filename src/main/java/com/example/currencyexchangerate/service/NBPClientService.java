@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -19,34 +21,52 @@ public class NBPClientService {
 
 
     private static final String NBP_URL = "http://api.nbp.pl/api/exchangerates/rates/c/";
+    private static final BigDecimal COMMISION_FACTOR = BigDecimal.valueOf(0.98d);
 
 
-    public String getCurrencyMap(String src, String dst, Double money) throws IOException {
+    public String getCurrencyMap(CurrencyCode srcAsCurrencyCode, CurrencyCode dstAsCurrencyCode, BigDecimal money) throws IOException {
 
-        Map<String, ExchangeRate> currency = new HashMap<>();
+        Map<CurrencyCode, ExchangeRate> currency = new HashMap<>();
 
-        CurrencyCode srcAsCurrencyCode=CurrencyCode.valueOf(src);
-        CurrencyCode dstAsCurrencyCode=CurrencyCode.valueOf(dst);
-
-        //sprzedaż waluty obcej
-        if (!CurrencyCode.PLN.name().equals(src)) {
-
-            currency.put(src,getExchangeRateByCurrencyCode(srcAsCurrencyCode));
-        }
-
-        //kupno waluty obcej
-        if (!CurrencyCode.PLN.name().equals(dst)) {
-
-            currency.put(dst,getExchangeRateByCurrencyCode(dstAsCurrencyCode));
-
-        }
+        BigDecimal sellAmount = sell(srcAsCurrencyCode, money, currency);
+        BigDecimal buyAmount = buy(dstAsCurrencyCode, sellAmount, currency);
 
 
-
-        return "Waluta żródłowa: ".concat(src).concat(", waluta docelowa: ").concat(dst).concat(", kurs wymiany: ").concat(currency.get(src).getBuy().toString());
+        return "Waluta żródłowa: ".concat(dstAsCurrencyCode.toString()).concat(", waluta docelowa: ")
+                .concat(dstAsCurrencyCode.toString()).concat(", kurs wymiany: ")
+                .concat(currency.get(srcAsCurrencyCode).getBuy().toString());
 
     }
 
+    private BigDecimal sell(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency) throws IOException {
+
+        if (CurrencyCode.PLN == src) {
+            return money;
+        } else {
+
+            ExchangeRate exchangeRate = getExchangeRateByCurrencyCode(src);
+            currency.put(src, exchangeRate);
+            BigDecimal exchangedAmount = money.multiply(exchangeRate.getSell());
+            BigDecimal exchangedAmountAfterCommisson = exchangedAmount.multiply(COMMISION_FACTOR);
+            return exchangedAmountAfterCommisson;
+
+        }
+    }
+
+    private BigDecimal buy(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency) throws IOException {
+
+        if (CurrencyCode.PLN != src) {
+            ExchangeRate exchangeRate = getExchangeRateByCurrencyCode(src);
+            currency.put(src, exchangeRate);
+            BigDecimal exchangedAmount = money.divide(exchangeRate.getBuy(), RoundingMode.HALF_UP);
+            BigDecimal exchangedAmountAfterCommisson = exchangedAmount.multiply(COMMISION_FACTOR);
+            return exchangedAmountAfterCommisson;
+
+        } else {
+            return money;
+        }
+
+    }
 
 
     public ExchangeRate getExchangeRateByCurrencyCode(@NotNull CurrencyCode currencyCode) throws IOException {
@@ -59,8 +79,8 @@ public class NBPClientService {
 
             JSONObject json = new JSONObject(jsonText);
 
-            Double bidRate = json.getJSONArray("rates").getJSONObject(0).getDouble("bid");
-            Double askRate = json.getJSONArray("rates").getJSONObject(0).getDouble("ask");
+            BigDecimal bidRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("bid");
+            BigDecimal askRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("ask");
             ExchangeRate exchangeRate = new ExchangeRate(bidRate, askRate);
 
             // Wstępnie przeglądamy zawartość z strumienia czy dobrze zaczytuje dane walut

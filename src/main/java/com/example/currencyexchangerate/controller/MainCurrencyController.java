@@ -1,12 +1,14 @@
 package com.example.currencyexchangerate.controller;
 
 
+import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.service.NBPClientService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping
@@ -18,10 +20,9 @@ public class MainCurrencyController {
 
     @GetMapping("/currency")
     @ResponseBody
-    String getCurrency(@RequestParam(required = true) String src, @RequestParam(required = true) String dst, @RequestParam(required = true) Double money)
+    String getCurrency(@RequestParam(required = true)String src, @RequestParam(required = true) String dst, @RequestParam(required = true) BigDecimal money)
             throws IOException {
-
-        return nbpClientService.getCurrencyMap(src, dst, money);
+        return nbpClientService.getCurrencyMap(CurrencyCode.valueOf(src.toUpperCase()),CurrencyCode.valueOf(dst.toUpperCase()),money);
 
 
     }
