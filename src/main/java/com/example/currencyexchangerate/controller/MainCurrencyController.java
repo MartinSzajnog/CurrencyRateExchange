@@ -5,6 +5,7 @@ import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.service.ExchangeService;
 import com.example.currencyexchangerate.service.NBPClientService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +32,12 @@ public class MainCurrencyController {
 
     @GetMapping("/currency")
     @ResponseBody
-    String getCurrency(@RequestParam(required = true)String src, @RequestParam(required = true) String dst, @RequestParam(required = true) BigDecimal money)
+    String getCurrency(@RequestParam(required = true)@Valid String src,
+                       @RequestParam(required = true)@Valid String dst,
+                       @RequestParam(required = true)@Valid @Positive  BigDecimal money)
             throws IOException {
-        return exchangeService.exchangeCurrency(CurrencyCode.valueOf(src.toUpperCase()),CurrencyCode.valueOf(dst.toUpperCase()),money);
+        return exchangeService.exchangeCurrency(CurrencyCode.valueOf(src.toUpperCase()),
+                CurrencyCode.valueOf(dst.toUpperCase()),money);
 
 
     }
