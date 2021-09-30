@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 
 
 
-public class MainCurrencyController {
+public class CurrencyController {
     private final ExchangeService exchangeService;
 
     /**

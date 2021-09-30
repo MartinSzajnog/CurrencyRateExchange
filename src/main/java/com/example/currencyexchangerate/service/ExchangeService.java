@@ -22,7 +22,6 @@ public class ExchangeService {
 
     private static final String NBP_URL = "http://api.nbp.pl/api/exchangerates/rates/c/";
     private static final BigDecimal COMMISION_FACTORY = BigDecimal.valueOf(0.98d);//98 procent kwoty
-    // private static final MathContext MATH_CONTEXT_PRECISION_2 = new MathContext(4, RoundingMode.HALF_UP);
     private final NBPClientService nbpClientService;
 
     /**
@@ -91,7 +90,8 @@ public class ExchangeService {
         } else {
             ExchangeRate exchangeRate = nbpClientService.getExchangeRateByCurrencyCode(src);
             currency.put(src, exchangeRate);
-            BigDecimal exchangedAmount = money.multiply(exchangeRate.getBuy().setScale(2, BigDecimal.ROUND_HALF_UP));
+            BigDecimal exchangedAmount = money.multiply(exchangeRate.getBuy().setScale(2,
+                    BigDecimal.ROUND_HALF_UP));
             BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY);
             return exchangedAmountAfterCommission;
 
