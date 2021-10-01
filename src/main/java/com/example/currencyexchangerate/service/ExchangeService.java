@@ -3,73 +3,69 @@ package com.example.currencyexchangerate.service;
 import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.model.ExchangeRate;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
-@Service
-@Validated
-@RequiredArgsConstructor
 
+@Validated
+@Service
+@AllArgsConstructor
 public class ExchangeService {
 
-    private static final String NBP_URL = "http://api.nbp.pl/api/exchangerates/rates/c/";
     private static final BigDecimal COMMISION_FACTORY = BigDecimal.valueOf(0.98d);//98 procent kwoty
-    private final NBPClientService nbpClientService;
+    // private static final MathContext MATH_CONTEXT_PRECISION_2 = new MathContext(4, RoundingMode.HALF_UP);
+
+    private final NBPClientService nbpClient;
 
     /**
      * @param srcAsCurrencyCode
      * @param dstAsCurrencyCode
      * @param money
-     * @return
      * @throws IOException
      */
 
     public String exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
-                                   @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money)
+                                   @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money) throws IOException {
+        return exchangeCurrency(srcAsCurrencyCode, dstAsCurrencyCode, money, null);
+    }
+
+    public String exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
+                                   @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money, LocalDateTime dateTime)
             throws IOException {
 
 
         if (srcAsCurrencyCode.equals(dstAsCurrencyCode)) {
-
             return "Nie można wymienić. Waluta żródłowa musi być różna od docelowej";
-
         }
 
         Map<CurrencyCode, ExchangeRate> currency = new HashMap<>();
-
         StringBuilder read = new StringBuilder();
-
         BigDecimal afterExchange;
 
 
         if (srcAsCurrencyCode.equals(CurrencyCode.PLN)) {
-
-            afterExchange = buy(dstAsCurrencyCode, money, currency);
+            afterExchange = buy(dstAsCurrencyCode, money, currency, dateTime);
 
             read.append("Waluta docelowa: ").append(dstAsCurrencyCode.toString());
             read.append(", kurs sprzedaży: ").append(currency.get(dstAsCurrencyCode).getSell().toString());
 
-
         } else if (dstAsCurrencyCode.equals(CurrencyCode.PLN)) {
-
-
-            afterExchange = sell(srcAsCurrencyCode, money, currency);
+            afterExchange = sell(srcAsCurrencyCode, money, currency, dateTime);
 
             read.append("Waluta źródłowa:").append(srcAsCurrencyCode.toString());
-            read.append(", kurs kupna: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
+            read.append(", kurs sprzedaży: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
 
         } else {
-            BigDecimal sellAmount = sell(srcAsCurrencyCode, money, currency);
-            afterExchange = buy(dstAsCurrencyCode, sellAmount, currency);
+            BigDecimal sellAmount = sell(srcAsCurrencyCode, money, currency, dateTime);
+            afterExchange = buy(dstAsCurrencyCode, sellAmount, currency, dateTime);
 
             read.append("   Waluta źródłowa:").append(srcAsCurrencyCode.toString());
             read.append(",  kurs kupna: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
@@ -83,39 +79,36 @@ public class ExchangeService {
 
     }
 
-    private BigDecimal sell(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency)
+    private BigDecimal sell(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
             throws IOException {
 
         if (CurrencyCode.PLN == src) {
             return money;
         } else {
-            ExchangeRate exchangeRate = nbpClientService.getExchangeRateByCurrencyCode(src);
+            ExchangeRate exchangeRate = nbpClient.getExchangeRateByCurrencyCode(src, dateTime);
             currency.put(src, exchangeRate);
-            BigDecimal exchangedAmount = money.multiply(exchangeRate.getBuy().setScale(2,
-                    BigDecimal.ROUND_HALF_UP));
-            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY)
-                    .setScale(2, RoundingMode.HALF_UP);
-            return exchangedAmountAfterCommission;
+
+            BigDecimal exchangedAmount = money.multiply(exchangeRate.getBuy().setScale(2, RoundingMode.HALF_UP));
+
+            return exchangedAmount.multiply(COMMISION_FACTORY).setScale(2, RoundingMode.HALF_UP);
         }
+
     }
 
-
-    private BigDecimal buy(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency)
+    // src = GB za money = 100 zl
+    private BigDecimal buy(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
             throws IOException {
 
         if (CurrencyCode.PLN != src) {
-            ExchangeRate exchangeRate = nbpClientService.getExchangeRateByCurrencyCode(src);
+            ExchangeRate exchangeRate = nbpClient.getExchangeRateByCurrencyCode(src, dateTime);
             currency.put(src, exchangeRate);
-            BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(),2,RoundingMode.HALF_UP);
-            BigDecimal exchangedAmountAfterCommission = exchangedAmount.multiply(COMMISION_FACTORY)
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal exchangedAmount = money.divide(exchangeRate.getSell(), 2, RoundingMode.HALF_UP);
 
-            return exchangedAmountAfterCommission;
+            return exchangedAmount.multiply(COMMISION_FACTORY).setScale(2, RoundingMode.HALF_UP);
         } else {
             return money;
 
         }
+
     }
-
-
 }
