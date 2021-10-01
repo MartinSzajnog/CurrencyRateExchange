@@ -1,59 +1,73 @@
-
-
-
-/*
 package com.example.currencyexchangerate.service;
 
 import com.example.currencyexchangerate.model.CurrencyCode;
-import com.example.currencyexchangerate.model.ExchangeRate;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.json.JSONObject;
+
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URL;
+import java.time.LocalDateTime;
 
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
 class ExchangeServiceTest {
 
-    @InjectMocks
-    NBPClientService nbpClientService = new NBPClientService();
-    @InjectMocks
-    ExchangeService exchangeService = new ExchangeService(nbpClientService);
+    NBPClientService nbpClient = new NBPClientService();
+    ExchangeService exchangeService = new ExchangeService(nbpClient);
 
     @Test
+    @DisplayName("Weryfikacja przewalutowania z PLN na USD")
     void checkExchangeFromPlnToUsd() throws IOException {
-
-
         //given
-        NBPClientService mock = Mockito.mock(NBPClientService.class);
-        ExchangeRate exchangeRate = new ExchangeRate(new BigDecimal(4.0107), new BigDecimal(3.9313));
-        when(mock.getExchangeRateByCurrencyCode(CurrencyCode.USD)).thenReturn(exchangeRate);
-
-        // URL urlUSD = new URL("http://api.nbp.pl/api/exchangerates/rates/c/USD/2021-10-01?format=json");
+        LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
         //when
-
-        String outputTextPLNToUSD = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100));
-        String outputTextUSDToPLN = exchangeService.exchangeCurrency(CurrencyCode.USD, CurrencyCode.PLN, new BigDecimal(100));
-        //  String outputTextPLNToPLN = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100));
-
-      //  System.out.println(outputTextPLNToUSD);
-        //System.out.println(outputTextUSDToPLN);
-        //  System.out.println(outputTextPLNToPLN);
+        String outputTextPLNToUSD = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100), date20210920);
 
         //then
-        Assertions.assertEquals("Waluta docelowa: USD, kurs sprzedaży: 4.0107, wymieniono na:24.43 USD",outputTextPLNToUSD);
-       // assertTrue(outputTextPLNToUSD.equals("Waluta docelowa: USD, kurs sprzedaży: 4.0107, wymieniono na:24.43 USD"));
-        Assertions.assertEquals("Waluta żródłowa:USD, kurs sprzedaży: 3.9313, wymieniono na:385.14 PLN",outputTextUSDToPLN);
+        assertTrue(outputTextPLNToUSD.equals("Waluta docelowa: USD, kurs sprzedaży: 3.9402, wymieniono na:24.87 USD"));
+    }
 
-}}
-*/
+    @Test
+    @DisplayName("Weryfikacja przewalutowania z USD na PLN")
+    void checkExchangeFromUsdToPln() throws IOException {
+        //given
+        LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
+        //when
+        String outputTextUSDToPLN = exchangeService.exchangeCurrency(CurrencyCode.USD, CurrencyCode.PLN, new BigDecimal(100), date20210920);
 
+        //then
+        assertTrue(outputTextUSDToPLN.equals("Waluta źródłowa:USD, kurs sprzedaży: 3.8622, wymieniono na:378.28 PLN"));
+    }
+
+    @Test
+    @DisplayName("Weryfikacja przewalutowania z GBP na USD")
+    void checkExchangeFromGbpToEur() throws IOException {
+        //given
+        LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
+
+        //when
+        String outputTextGBPToEUR = exchangeService.exchangeCurrency(CurrencyCode.GBP, CurrencyCode.EUR, new BigDecimal(100), date20210920);
+
+        System.out.println(outputTextGBPToEUR);
+
+        //then
+        assertEquals(outputTextGBPToEUR, "   Waluta źródłowa:GBP,  kurs kupna: 5.3206   Waluta docelowa:EUR,  kurs sprzedaży: 4.6321, wymieniono na:110.30 EUR");
+    }
+
+    @Test
+    @DisplayName("Weryfikacja przewalutowania z PLN na PLN")
+    void checkExchangeFromPlnToPln() throws IOException {
+        //given
+        LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
+
+        //when
+        String outputTextPLNToPLN = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.PLN, new BigDecimal(100), date20210920);
+
+        //then
+        assertTrue(outputTextPLNToPLN.equals("Nie można wymienić. Waluta żródłowa musi być różna od docelowej"));
+
+    }
+}
