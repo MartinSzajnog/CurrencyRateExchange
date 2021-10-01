@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 
+
+
 public class ExchangeRate {
     private BigDecimal buy;
     private BigDecimal sell;
