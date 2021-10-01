@@ -4,9 +4,10 @@ import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.model.ExchangeRate;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+
+
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URL;

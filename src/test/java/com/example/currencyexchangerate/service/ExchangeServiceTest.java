@@ -1,3 +1,4 @@
+
 package com.example.currencyexchangerate.service;
 
 import com.example.currencyexchangerate.model.CurrencyCode;
@@ -69,5 +70,5 @@ class ExchangeServiceTest {
         //then
         assertTrue(outputTextPLNToPLN.equals("Nie można wymienić. Waluta żródłowa musi być różna od docelowej"));
 
-    }
-}
+    }}
+
