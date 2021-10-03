@@ -17,7 +17,6 @@ class ExchangeServiceTest {
     NBPClientService nbpClient = new NBPClientService();
     ExchangeService exchangeService = new ExchangeService(nbpClient);
 
-    @Test
     @DisplayName("Weryfikacja przewalutowania z PLN na USD")
     void checkExchangeFromPlnToUsd() throws IOException {
         //given

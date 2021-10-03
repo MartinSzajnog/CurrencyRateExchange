@@ -61,7 +61,7 @@ public class ExchangeService {
             afterExchange = sell(srcAsCurrencyCode, money, currency, dateTime);
 
             read.append("Waluta źródłowa:").append(srcAsCurrencyCode.toString());
-            read.append(", kurs sprzedaży: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
+            read.append(", kurs kupna: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
 
         } else {
             BigDecimal sellAmount = sell(srcAsCurrencyCode, money, currency, dateTime);
