@@ -2,6 +2,7 @@
 package com.example.currencyexchangerate.service;
 
 import com.example.currencyexchangerate.model.CurrencyCode;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ class ExchangeServiceTest {
         String outputTextPLNToUSD = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100), date20210920);
 
         //then
-        assertTrue(outputTextPLNToUSD.equals("Waluta docelowa: USD, kurs sprzedaży: 3.9402, wymieniono na:24.87 USD"));
+        Assertions.assertEquals(outputTextPLNToUSD,("Waluta docelowa: USD, kurs sprzedaży: 3.9402, wymieniono na:24.87 USD"));
     }
 
     @Test
@@ -39,7 +40,7 @@ class ExchangeServiceTest {
         String outputTextUSDToPLN = exchangeService.exchangeCurrency(CurrencyCode.USD, CurrencyCode.PLN, new BigDecimal(100), date20210920);
 
         //then
-        assertTrue(outputTextUSDToPLN.equals("Waluta źródłowa:USD, kurs sprzedaży: 3.8622, wymieniono na:378.28 PLN"));
+        Assertions.assertEquals(outputTextUSDToPLN,("Waluta źródłowa:USD, kurs kupna: 3.8622, wymieniono na:378.28 PLN"));
     }
 
     @Test
@@ -54,7 +55,7 @@ class ExchangeServiceTest {
         System.out.println(outputTextGBPToEUR);
 
         //then
-        assertEquals(outputTextGBPToEUR, "   Waluta źródłowa:GBP,  kurs kupna: 5.3206   Waluta docelowa:EUR,  kurs sprzedaży: 4.6321, wymieniono na:110.30 EUR");
+        Assertions.assertEquals(outputTextGBPToEUR, "   Waluta źródłowa:GBP,  kurs kupna: 5.3206   Waluta docelowa:EUR,  kurs sprzedaży: 4.6321, wymieniono na:110.30 EUR");
     }
 
     @Test
@@ -67,7 +68,7 @@ class ExchangeServiceTest {
         String outputTextPLNToPLN = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.PLN, new BigDecimal(100), date20210920);
 
         //then
-        assertTrue(outputTextPLNToPLN.equals("Nie można wymienić. Waluta żródłowa musi być różna od docelowej"));
+        Assertions.assertEquals(outputTextPLNToPLN,("Nie można wymienić. Waluta żródłowa musi być różna od docelowej"));
 
     }}
 
