@@ -1,0 +1,6 @@
+com\example\currencyexchangerate\model\ExchangeRate.class
+com\example\currencyexchangerate\service\ExchangeService.class
+com\example\currencyexchangerate\CurrencyExchangeRateApplication.class
+com\example\currencyexchangerate\model\CurrencyCode.class
+com\example\currencyexchangerate\service\NBPClientService.class
+com\example\currencyexchangerate\controller\CurrencyController.class
