@@ -36,15 +36,13 @@ public class NBPClientService {
             BigDecimal askRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("ask");
             ExchangeRate exchangeRate = new ExchangeRate(bidRate, askRate);
 
-            // Wstępnie przeglądamy zawartość z strumienia czy dobrze zaczytuje dane walut
-
             System.out.println("Waluta: " + currencyCode.name());
             System.out.println("Kurs zakupu: " + bidRate);
             System.out.println("Kurs sprzedaży: " + askRate);
 
             return exchangeRate;
         } finally {
-            is.close();    //Po wykonaniu zczytania zamykamy kran z strumieniem. Zamykamy strumień wejściowy.
+            is.close();
         }
 
     }
