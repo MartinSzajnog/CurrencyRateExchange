@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 
 
+import lombok.NoArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import java.io.*;
@@ -14,45 +15,35 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.Callable;
 
 
 @Component
 @AllArgsConstructor
-public class NBPClientService {
+@NoArgsConstructor
+public class NBPClientService implements Callable<ExchangeRate> {
+
+    CurrencyCode currencyCode;
+    LocalDateTime localDateTime;
+    InputStream is;
 
     private static final String NBP_URL = "http://api.nbp.pl/api/exchangerates/rates/c/";
 
     public ExchangeRate getExchangeRateByCurrencyCode(@NotNull CurrencyCode currencyCode, LocalDateTime dateTime) throws IOException {
 
-        InputStream is = getInputStream(currencyCode, dateTime);
+        this.currencyCode = currencyCode;
+        this.localDateTime = dateTime;
 
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            String jsonText = readAll(br);
-
-            JSONObject json = new JSONObject(jsonText);
-
-            BigDecimal bidRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("bid");
-            BigDecimal askRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("ask");
-            ExchangeRate exchangeRate = new ExchangeRate(bidRate, askRate);
-
-            System.out.println("Waluta: " + currencyCode.name());
-            System.out.println("Kurs zakupu: " + bidRate);
-            System.out.println("Kurs sprzedaży: " + askRate);
-
-            return exchangeRate;
-        } finally {
-            is.close();
-        }
+        return call();
 
     }
 
-    public InputStream getInputStream(CurrencyCode currencyCode, LocalDateTime dateTime) throws IOException {
+    public InputStream getInputStream() throws IOException {
         URL url;
-        if (dateTime != null) {
-            url = new URL(NBP_URL + currencyCode.name() + "/" + dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "?format=json");
+        if (this.localDateTime != null) {
+            url = new URL(NBP_URL + this.currencyCode.name() + "/" + this.localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "?format=json");
         } else {
-            url = new URL(NBP_URL + currencyCode.name() + "?format=json");
+            url = new URL(NBP_URL + this.currencyCode.name() + "?format=json");
         }
 
         InputStream is = url.openStream();
@@ -69,5 +60,23 @@ public class NBPClientService {
         return sb.toString();
     }
 
+    @Override
+    public ExchangeRate call() throws IOException {
+            this.is = getInputStream();
 
+                BufferedReader br = new BufferedReader(new InputStreamReader(this.is, StandardCharsets.UTF_8));
+                String jsonText = readAll(br);
+
+                JSONObject json = new JSONObject(jsonText);
+
+                BigDecimal bidRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("bid");
+                BigDecimal askRate = json.getJSONArray("rates").getJSONObject(0).getBigDecimal("ask");
+                ExchangeRate exchangeRate = new ExchangeRate(bidRate, askRate);
+
+                System.out.println("Waluta: " + currencyCode.name());
+                System.out.println("Kurs zakupu: " + bidRate);
+                System.out.println("Kurs sprzedaży: " + askRate);
+
+                return  exchangeRate;
+    }
 }

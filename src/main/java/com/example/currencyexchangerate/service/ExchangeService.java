@@ -32,54 +32,66 @@ public class ExchangeService {
      * @throws IOException
      */
 
-    public String exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
-                                   @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money) throws IOException {
+    public ExchangeCurrencyResultAll exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
+                                                      @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money) throws IOException {
         return exchangeCurrency(srcAsCurrencyCode, dstAsCurrencyCode, money, null);
     }
 
-    public String exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
-                                   @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money, LocalDateTime dateTime)
+    public ExchangeCurrencyResultAll exchangeCurrency(@NotNull(message = "Kod waluty żródłowej jest wymagany") CurrencyCode srcAsCurrencyCode,
+                                                      @NotNull CurrencyCode dstAsCurrencyCode, @NotNull BigDecimal money, LocalDateTime dateTime)
             throws IOException {
 
-
         if (srcAsCurrencyCode.equals(dstAsCurrencyCode)) {
-            return "Nie można wymienić. Waluta żródłowa musi być różna od docelowej";
+            throw new IllegalArgumentException("Nie można wymienić. Waluta żródłowa musi być różna od docelowej");
         }
 
         Map<CurrencyCode, ExchangeRate> currency = new HashMap<>();
         StringBuilder read = new StringBuilder();
         BigDecimal afterExchange;
 
-
+        BigDecimal sellRate = null;
+        BigDecimal buyRate = null;
         if (srcAsCurrencyCode.equals(CurrencyCode.PLN)) {
             afterExchange = buy(dstAsCurrencyCode, money, currency, dateTime);
 
             read.append("Waluta docelowa: ").append(dstAsCurrencyCode.toString());
-            read.append(", kurs sprzedaży: ").append(currency.get(dstAsCurrencyCode).getSell().toString());
+            sellRate = currency.get(dstAsCurrencyCode).getSell();
+            read.append(", kurs sprzedaży: ").append(sellRate.toString());
 
         } else if (dstAsCurrencyCode.equals(CurrencyCode.PLN)) {
             afterExchange = sell(srcAsCurrencyCode, money, currency, dateTime);
 
             read.append("Waluta źródłowa:").append(srcAsCurrencyCode.toString());
-            read.append(", kurs kupna: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
+            buyRate = currency.get(srcAsCurrencyCode).getBuy();
+            read.append(", kurs kupna: ").append(buyRate.toString());
 
         } else {
             BigDecimal sellAmount = sell(srcAsCurrencyCode, money, currency, dateTime);
             afterExchange = buy(dstAsCurrencyCode, sellAmount, currency, dateTime);
 
             read.append("   Waluta źródłowa:").append(srcAsCurrencyCode.toString());
-            read.append(",  kurs kupna: ").append(currency.get(srcAsCurrencyCode).getBuy().toString());
+            buyRate = currency.get(srcAsCurrencyCode).getBuy();
+            read.append(",  kurs kupna: ").append(buyRate.toString());
             read.append("   Waluta docelowa:").append(dstAsCurrencyCode.toString());
-            read.append(",  kurs sprzedaży: ").append(currency.get(dstAsCurrencyCode).getSell().toString());
+            sellRate = currency.get(dstAsCurrencyCode).getSell();
+            read.append(",  kurs sprzedaży: ").append(sellRate.toString());
 
         }
         read.append(", wymieniono na:").append(afterExchange);
         read.append(" ").append(dstAsCurrencyCode);
-        return read.toString();
 
+        return ExchangeCurrencyResultAll.builder()
+                .amountToExchange(money)
+                .fromCurrency(srcAsCurrencyCode)
+                .destinationCurrency(dstAsCurrencyCode)
+                .exchangedAmount(afterExchange)
+                .sellRate(sellRate)
+                .buyRate(buyRate)
+                .build();
     }
 
-    private BigDecimal sell(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
+    private BigDecimal sell(CurrencyCode src, BigDecimal
+            money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
             throws IOException {
 
         if (CurrencyCode.PLN == src) {
@@ -96,7 +108,8 @@ public class ExchangeService {
     }
 
     // src = GB za money = 100 zl
-    private BigDecimal buy(CurrencyCode src, BigDecimal money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
+    private BigDecimal buy(CurrencyCode src, BigDecimal
+            money, Map<CurrencyCode, ExchangeRate> currency, LocalDateTime dateTime)
             throws IOException {
 
         if (CurrencyCode.PLN != src) {

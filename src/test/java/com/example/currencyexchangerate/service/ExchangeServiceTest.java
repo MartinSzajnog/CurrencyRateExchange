@@ -24,7 +24,7 @@ class ExchangeServiceTest {
         LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
         //when
-        String outputTextPLNToUSD = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100), date20210920);
+        ExchangeCurrencyResultAll outputTextPLNToUSD = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.USD, new BigDecimal(100), date20210920);
 
         //then
         Assertions.assertEquals(outputTextPLNToUSD,("Waluta docelowa: USD, kurs sprzedaży: 3.9402, wymieniono na:24.87 USD"));
@@ -37,7 +37,7 @@ class ExchangeServiceTest {
         LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
         //when
-        String outputTextUSDToPLN = exchangeService.exchangeCurrency(CurrencyCode.USD, CurrencyCode.PLN, new BigDecimal(100), date20210920);
+        ExchangeCurrencyResultAll outputTextUSDToPLN = exchangeService.exchangeCurrency(CurrencyCode.USD, CurrencyCode.PLN, new BigDecimal(100), date20210920);
 
         //then
         Assertions.assertEquals(outputTextUSDToPLN,("Waluta źródłowa:USD, kurs kupna: 3.8622, wymieniono na:378.28 PLN"));
@@ -50,7 +50,7 @@ class ExchangeServiceTest {
         LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
         //when
-        String outputTextGBPToEUR = exchangeService.exchangeCurrency(CurrencyCode.GBP, CurrencyCode.EUR, new BigDecimal(100), date20210920);
+        ExchangeCurrencyResultAll outputTextGBPToEUR = exchangeService.exchangeCurrency(CurrencyCode.GBP, CurrencyCode.EUR, new BigDecimal(100), date20210920);
 
         System.out.println(outputTextGBPToEUR);
 
@@ -65,7 +65,7 @@ class ExchangeServiceTest {
         LocalDateTime date20210920 = LocalDateTime.of(2021, 9, 20, 00, 00);
 
         //when
-        String outputTextPLNToPLN = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.PLN, new BigDecimal(100), date20210920);
+        ExchangeCurrencyResultAll outputTextPLNToPLN = exchangeService.exchangeCurrency(CurrencyCode.PLN, CurrencyCode.PLN, new BigDecimal(100), date20210920);
 
         //then
         Assertions.assertEquals(outputTextPLNToPLN,("Nie można wymienić. Waluta żródłowa musi być różna od docelowej"));

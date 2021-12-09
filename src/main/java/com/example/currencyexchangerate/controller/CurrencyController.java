@@ -3,6 +3,7 @@ package com.example.currencyexchangerate.controller;
 import com.example.currencyexchangerate.model.CurrencyCode;
 import com.example.currencyexchangerate.service.ExchangeService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,15 +37,15 @@ public class CurrencyController {
      *                     http://localhost:8080/currency?src=PLN&dst=USD&money=100
      */
     @GetMapping("/currency")
-    String getCurrency(@RequestParam String src,
+    ResponseEntity getCurrency(@RequestParam String src,
                        @RequestParam String dst,
                        @RequestParam BigDecimal money
     ) throws IOException {
         List<String> errors = checkErrors(src, dst, money);
         if (!errors.isEmpty()) {
-            return errors.toString();
+            return ResponseEntity.badRequest().body(errors.toString());
         } else
-            return exchangeService.exchangeCurrency(valueOf(src.toUpperCase()), valueOf(dst.toUpperCase()), money);
+          return ResponseEntity.ok().body(exchangeService.exchangeCurrency(valueOf(src.toUpperCase()), valueOf(dst.toUpperCase()), money));
     }
 
     private List<String> checkErrors(String src, String dst, BigDecimal money) {
